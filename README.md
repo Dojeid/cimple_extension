@@ -10,9 +10,9 @@ Cimple is a Python-compatible language with a few small twists, so this extensio
 
 ## Quick start
 
-1. Run npm install to pull in the toolchain.
-2. Compile the extension with npm run compile (this produces out/extension.js).
-3. Press F5 to open the Extension Development Host and open a .cimp, .csc, or .cimple file to verify the highlighting.
+1. Run npm install.
+2. Press F5 to open the Extension Development Host.
+3. Open a .cimp, .csc, or .cimple file to verify the highlighting.
 
 ## Extending the grammar
 
@@ -20,9 +20,8 @@ syntaxes/cimple.tmLanguage.json merely includes source.python today. If you need
 
 ## Testing the setup
 
-* npm run compile ensures the TypeScript helper builds even though the extension logic is minimal today.
-* Run npm run watch to keep rebuilding after edits if you add more TypeScript code.
-* Launch the dev host (F5) after each change to confirm VS Code loads the updated grammar and configuration.
+* Launch the dev host (F5) and verify syntax colors and bracket behavior.
+* Reload the Extension Development Host window after grammar/config updates.
 
 ## Publishing notes
 

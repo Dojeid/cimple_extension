@@ -10,22 +10,8 @@
   "categories": [
     "Programming Languages"
   ],
-  "activationEvents": [
-    "onLanguage:cimple"
-  ],
-  "main": "./out/extension.js",
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "prepare": "npm run compile"
-  },
-  "devDependencies": {
-    "@types/node": "^22.9.6",
-    "@types/vscode": "^1.128.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.5.2",
-    "vscode-test": "^2.0.0"
+    "vsix": "npx @vscode/vsce package"
   },
   "contributes": {
     "languages": [
