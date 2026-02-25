@@ -4,7 +4,7 @@
   "icon": "images/cimple_icon-removebg.png",
   "description": "Python-based Cimple syntax highlighting for Visual Studio Code.",
   "version": "0.0.1",
-  "publisher": "cimple",
+  "publisher": "Cimple-Industries",
   "engines": {
     "vscode": "^1.90.0"
   },
