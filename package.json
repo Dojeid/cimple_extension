@@ -1,0 +1,25 @@
+{
+  "name": "cimple-extensions",
+  "displayName": "Cimple Extensions",
+  "description": "Provides Syntax Highlights and F5 to run capabilities !",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.109.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "cimple",
+      "aliases": ["Cimple", "cimple"],
+      "extensions": [".cimp",".csc"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "cimple",
+      "scopeName": "source.cimple",
+      "path": "./syntaxes/cimple.tmLanguage.json"
+    }]
+  }
+}
