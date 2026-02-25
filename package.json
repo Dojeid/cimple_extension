@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.9.6",
-    "@types/vscode": "^1.130.0",
+    "@types/vscode": "^1.128.0",
     "tslib": "^2.6.2",
     "typescript": "^5.5.2",
     "vscode-test": "^2.0.0"
