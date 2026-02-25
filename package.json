@@ -10,10 +10,28 @@
   "categories": [
     "Programming Languages"
   ],
+  "activationEvents": [
+    "onLanguage:cimple",
+    "onCommand:cimple.buildAndRun"
+  ],
+  "main": "./extension.js",
   "scripts": {
-    "vsix": "npx @vscode/vsce package"
+    "vsix": "vsce package --allow-missing-repository --no-dependencies"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "cimple.buildAndRun",
+        "title": "Cimple: Build and Run Active File"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "cimple.buildAndRun",
+        "key": "f5",
+        "when": "editorTextFocus && editorLangId == cimple"
+      }
+    ],
     "languages": [
       {
         "id": "cimple",

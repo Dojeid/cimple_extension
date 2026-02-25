@@ -7,12 +7,14 @@ Cimple is a Python-compatible language with a few small twists, so this extensio
 - Adds the Cimple language mode with .cimp, .csc, and .cimple filenames.
 - Reuses the stock Python grammar source.python by aliasing it through source.cimple.
 - Ships a language configuration for comments, brackets, and indentation so VS Code behaves like Python by default.
+- Press F5 on an active Cimple file to run cimple build <file>.
+- If the build succeeds, the generated .exe runs in a VS Code terminal.
 
 ## Quick start
 
 1. Run npm install.
 2. Press F5 to open the Extension Development Host.
-3. Open a .cimp, .csc, or .cimple file to verify the highlighting.
+3. Open a .cimp, .csc, or .cimple file and press F5 to build and run.
 
 ## Extending the grammar
 
@@ -20,7 +22,7 @@ syntaxes/cimple.tmLanguage.json merely includes source.python today. If you need
 
 ## Testing the setup
 
-* Launch the dev host (F5) and verify syntax colors and bracket behavior.
+* Launch the dev host and verify syntax colors and bracket behavior.
 * Reload the Extension Development Host window after grammar/config updates.
 
 ## Publishing notes

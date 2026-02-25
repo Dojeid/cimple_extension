@@ -5,12 +5,14 @@
 * package.json declares the Cimple language mode and where the grammar and configuration live.
 * syntaxes/cimple.tmLanguage.json aliases source.cimple to the built-in VS Code Python grammar so you get instant highlighting.
 * language-configuration.json controls the brackets, comments, and on-enter indent behavior so the editor behaves like Python today.
+* extension.js provides the Cimple run command bound to F5 for Cimple files.
 
 ## Quick start
 
 1. Run npm install.
 2. Press F5 to open the Extension Development Host.
-3. Open a .cimp, .csc, or .cimple file to confirm Python highlighting and bracket behavior.
+3. Open a .cimp, .csc, or .cimple file to confirm Python highlighting.
+4. Press F5 to run the Cimple build command and then execute the generated program.
 
 ## Making changes
 
