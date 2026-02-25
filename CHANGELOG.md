@@ -1,9 +1,9 @@
 # Change Log
 
-All notable changes to the "cimple-extensions" extension will be documented in this file.
+All notable changes to the "Cimple" extension will be documented here.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+Check [Keep a Changelog](http://keepachangelog.com/) for structure guidance.
 
 ## [Unreleased]
 
-- Initial release
+- Initial Cimple grammar release based on the Python syntax.

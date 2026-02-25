@@ -1,29 +1,25 @@
-# Welcome to your VS Code Extension
+# Welcome to Cimple Language Support
 
-## What's in the folder
+## What is in this folder
 
-* This folder contains all of the files necessary for your extension.
-* `package.json` - this is the manifest file in which you declare your language support and define the location of the grammar file that has been copied into your extension.
-* `syntaxes/cimple.tmLanguage.json` - this is the Text mate grammar file that is used for tokenization.
-* `language-configuration.json` - this is the language configuration, defining the tokens that are used for comments and brackets.
+* package.json declares the Cimple language mode, activation events, and where the grammar and configuration live.
+* syntaxes/cimple.tmLanguage.json aliases source.cimple to the built-in VS Code Python grammar so you get instant highlighting.
+* language-configuration.json controls the brackets, comments, and on-enter indent behavior so the editor behaves like Python today.
+* src/extension.ts contains a minimal VS Code extension entry point in case we add code later.
 
-## Get up and running straight away
+## Quick start
 
-* Make sure the language configuration settings in `language-configuration.json` are accurate.
-* Press `F5` to open a new window with your extension loaded.
-* Create a new file with a file name suffix matching your language.
-* Verify that syntax highlighting works and that the language configuration settings are working.
+1. Run npm install to pull in the TypeScript toolchain.
+2. Compile with npm run compile (this writes out/extension.js).
+3. Press F5 to open the Extension Development Host.
+4. Open a .cimp, .csc, or .cimple file to confirm Python highlighting and bracket behavior.
 
-## Make changes
+## Making changes
 
-* You can relaunch the extension from the debug toolbar after making changes to the files listed above.
-* You can also reload (`Ctrl+R` or `Cmd+R` on Mac) the VS Code window with your extension to load your changes.
+* After editing files, rerun npm run compile or leave npm run watch running during development.
+* Reload the Extension Development Host (Ctrl+R or Cmd+R) to pick up grammar/configuration tweaks.
 
-## Add more language features
+## Next steps
 
-* To add features such as IntelliSense, hovers and validators check out the VS Code extenders documentation at https://code.visualstudio.com/api/language-extensions/overview
-
-## Install your extension
-
-* To start using your extension with Visual Studio Code copy it into the `<user home>/.vscode/extensions` folder and restart Code.
-* To share your extension with the world, read on https://code.visualstudio.com/api/working-with-extensions/publishing-extension about publishing an extension.
+* Add new tokens to syntaxes/cimple.tmLanguage.json if Cimple diverges from Python in the future.
+* Publish by following the instructions at https://code.visualstudio.com/api/working-with-extensions/publishing-extension once you are satisfied with the release notes in CHANGELOG.md.

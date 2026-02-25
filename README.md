@@ -1,65 +1,29 @@
-# cimple-extensions README
+# Cimple Syntax Highlighting
 
-This is the README for your extension "cimple-extensions". After writing up a brief description, we recommend including the following sections.
+Cimple is a Python-compatible language with a few small twists, so this extension reuses VS Code built-in Python TextMate grammar and maps it to the cimple scope. That keeps the colors, comments, and indentation assistance you already expect while laying the groundwork for future Cimple-specific tweaks.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Adds the Cimple language mode with .cimp, .csc, and .cimple filenames.
+- Reuses the stock Python grammar source.python by aliasing it through source.cimple.
+- Ships a language configuration for comments, brackets, and indentation so VS Code behaves like Python by default.
 
-For example if there is an image subfolder under your extension project workspace:
+## Quick start
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Run npm install to pull in the toolchain.
+2. Compile the extension with npm run compile (this produces out/extension.js).
+3. Press F5 to open the Extension Development Host and open a .cimp, .csc, or .cimple file to verify the highlighting.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Extending the grammar
 
-## Requirements
+syntaxes/cimple.tmLanguage.json merely includes source.python today. If you need to colorize new Cimple keywords, operators, or literal formats later, add new patterns to the repository section and reference them from the patterns array. That way you can build on the Python base without rewriting the entire grammar.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Testing the setup
 
-## Extension Settings
+* npm run compile ensures the TypeScript helper builds even though the extension logic is minimal today.
+* Run npm run watch to keep rebuilding after edits if you add more TypeScript code.
+* Launch the dev host (F5) after each change to confirm VS Code loads the updated grammar and configuration.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Publishing notes
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Since this extension is purely language metadata and grammar files, the contributes block is the public API: any file that matches .cimp, .csc, or .cimple maps to source.cimple. No activation events beyond onLanguage:cimple are needed right now.
