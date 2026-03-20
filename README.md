@@ -4,7 +4,7 @@ Cimple is a Python-compatible language with a few small twists, so this extensio
 
 ## Features
 
-- Adds the Cimple language mode with .cimp, .csc, and .cimple filenames.
+- Adds the Cimple language mode with .cimp filenames.
 - Reuses the stock Python grammar source.python by aliasing it through source.cimple.
 - Ships a language configuration for comments, brackets, and indentation so VS Code behaves like Python by default.
 - Press F5 on an active Cimple file to run cimple build <file>.
@@ -14,7 +14,7 @@ Cimple is a Python-compatible language with a few small twists, so this extensio
 
 1. Run npm install.
 2. Press F5 to open the Extension Development Host.
-3. Open a .cimp, .csc, or .cimple file and press F5 to build and run.
+3. Open a .cimp file and press F5 to build and run.
 
 ## Extending the grammar
 
