@@ -1,0 +1,17 @@
+{
+    "iconDefinitions": {
+        "cimple_file": {
+            "iconPath": "../images/cimple_icon-removebg.png"
+        },
+        "cimple_file_ico": {
+            "iconPath": "../images/cimple_icon-removebg.ico"
+        }
+    },
+    "file": "cimple_file",
+    "fileExtensions": {
+        "cimp": "cimple_file"
+    },
+    "fileNames": {
+        "test.cimp": "cimple_file"
+    }
+}

@@ -1,88 +1,91 @@
 "use strict";
 
 const vscode = require("vscode");
-const cp = require("child_process");
 const path = require("path");
 
-const CIMPLE_EXTENSIONS = new Set([".cimp", ".csc", ".cimple"]);
+const cp = require("child_process");
+
+const CIMPLE_EXTENSIONS = new Set([".cimp"]);
 
 function isCimpleFile(fsPath) {
   return CIMPLE_EXTENSIONS.has(path.extname(fsPath).toLowerCase());
 }
 
-function runProcess(command, args, cwd) {
-  return new Promise((resolve, reject) => {
-    const child = cp.spawn(command, args, {
-      cwd,
-      shell: true,
-      windowsHide: true
-    });
+async function checkAndRegisterWindowsIcons(context) {
+  // Only run this on Windows and only once per installation
+  if (process.platform !== "win32") return;
+  
+  const hasAsked = context.globalState.get("hasAskedForIcons", false);
+  if (hasAsked) return;
 
-    let stdout = "";
-    let stderr = "";
+  const selection = await vscode.window.showInformationMessage(
+    "Would you like to register Cimple icons for Windows File Explorer?",
+    "Yes", "Not now"
+  );
 
-    child.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    child.on("error", (err) => {
-      reject(err);
-    });
-
-    child.on("close", (code) => {
-      resolve({ code, stdout, stderr });
-    });
-  });
-}
-
-let runTerminal;
-let isBuilding = false;
-
-function getRunTerminal(cwd) {
-  if (!runTerminal || runTerminal.exitStatus) {
-    runTerminal = vscode.window.createTerminal({
-      name: "Cimple Run",
-      cwd,
-      shellPath: "C:\\Windows\\System32\\cmd.exe"
+  if (selection === "Yes") {
+    const scriptPath = path.join(context.extensionPath, "register.bat");
+    // Run the batch file which handles the permission and registry call
+    cp.exec(`start "" "${scriptPath}"`, (error) => {
+      if (error) {
+        vscode.window.showErrorMessage(`Failed to launch registration: ${error.message}`);
+      }
     });
   }
-  return runTerminal;
+  
+  // Save that we've asked so we don't bother the user again
+  await context.globalState.update("hasAskedForIcons", true);
 }
 
 async function buildAndRun(document) {
   const filePath = document.uri.fsPath;
-  if (!isCimpleFile(filePath) || isBuilding) {
+  if (!isCimpleFile(filePath)) {
     return;
   }
 
-  isBuilding = true;
-  const folder = path.dirname(filePath);
-  const exePath = path.join(folder, path.parse(filePath).name + ".exe");
-
-  try {
-    const buildResult = await runProcess("cimple", ["build", filePath], folder);
-    if (buildResult.code !== 0) {
-      const details = [buildResult.stderr, buildResult.stdout].filter(Boolean).join("\n").trim();
-      const message = details ? `Cimple build failed:\n${details}` : `Cimple build failed (exit code ${buildResult.code}).`;
-      vscode.window.showErrorMessage(message);
-      return;
-    }
-
-    const terminal = getRunTerminal(folder);
-    terminal.show(true);
-    terminal.sendText(`"${exePath}"`, true);
-  } catch (err) {
-    vscode.window.showErrorMessage(`Cimple build error: ${err.message}`);
-  } finally {
-    isBuilding = false;
+  // Save the document first to ensure the latest changes are built
+  if (document.isDirty) {
+    await document.save();
   }
+
+  const folder = path.dirname(filePath);
+  const fileName = path.parse(filePath).name;
+  
+  const isWindows = process.platform === "win32";
+  const exeName = isWindows ? `${fileName}.exe` : fileName;
+  const runPrefix = isWindows ? ".\\" : "./";
+
+  // Find and dispose existing Cimple terminal to stop any running process
+  const existingTerminal = vscode.window.terminals.find(t => t.name === "Cimple Run");
+  if (existingTerminal) {
+    existingTerminal.dispose();
+  }
+
+  // Create a new terminal for a clean run
+  const terminal = vscode.window.createTerminal({
+    name: "Cimple Run",
+    cwd: folder
+  });
+
+  terminal.show(true); // Show terminal but preserve focus in the editor
+
+  // Build the command: cimple build <file> && <exe>
+  const buildCmd = `cimple build "${path.basename(filePath)}"`;
+  const runCmd = `${runPrefix}"${exeName}"`;
+  
+  // Cross-platform command execution logic
+  // On Windows, use cmd /c to ensure && works regardless of the user's default shell (like old PowerShell)
+  const fullCmd = isWindows 
+    ? `cmd /c "${buildCmd} && ${runCmd}"` 
+    : `${buildCmd} && ${runCmd}`;
+
+  terminal.sendText(fullCmd);
 }
 
 function activate(context) {
+  // Check if we should ask to register Windows icons
+  checkAndRegisterWindowsIcons(context);
+
   const runCommand = vscode.commands.registerCommand("cimple.buildAndRun", async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {

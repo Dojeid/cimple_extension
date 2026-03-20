@@ -30,7 +30,7 @@
       {
         "command": "cimple.buildAndRun",
         "key": "f5",
-        "when": "editorTextFocus && editorLangId == cimple"
+        "when": "editorLangId == cimple"
       }
     ],
     "languages": [
@@ -41,10 +41,12 @@
           "cimple"
         ],
         "extensions": [
-          ".cimp",
-          ".csc",
-          ".cimple"
+          ".cimp"
         ],
+        "icon": {
+          "light": "./images/cimple_icon-removebg.png",
+          "dark": "./images/cimple_icon-removebg.png"
+        },
         "configuration": "./language-configuration.json"
       }
     ],
@@ -53,6 +55,13 @@
         "language": "cimple",
         "scopeName": "source.cimple",
         "path": "./syntaxes/cimple.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "cimple-icons",
+        "label": "Cimple Icons",
+        "path": "./icons/cimple-icons.json"
       }
     ]
   }
