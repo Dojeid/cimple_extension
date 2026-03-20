@@ -2,8 +2,9 @@
   "name": "cimple-language",
   "displayName": "Cimple",
   "icon": "resources/images/cimple_icon-removebg.png",
-  "description": "Python-based Cimple syntax highlighting for Visual Studio Code.",
-  "version": "0.0.3",
+  "description": "Professional Python-compatible syntax highlighting and build support for the Cimple language.",
+  "version": "0.0.5",
+  "author": "Cimple Industries",
   "publisher": "Cimple-Industries",
   "engines": {
     "vscode": "^1.90.0"
@@ -38,17 +39,6 @@
       {
         "command": "cimple.buildAndRun",
         "title": "Cimple: Build and Run Active File"
-      },
-      {
-        "command": "cimple.registerIcons",
-        "title": "Cimple: Register Windows File Explorer Icons"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "cimple.buildAndRun",
-        "key": "f5",
-        "when": "editorLangId == cimple"
       }
     ],
     "languages": [
@@ -75,11 +65,26 @@
         "path": "./resources/syntaxes/cimple.tmLanguage.json"
       }
     ],
-    "iconThemes": [
+    "debuggers": [
       {
-        "id": "cimple-icons",
-        "label": "Cimple Icons",
-        "path": "./resources/icons/cimple-icons.json"
+        "type": "cimple",
+        "label": "Cimple Debug",
+        "languages": [
+          "cimple"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {}
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "cimple",
+            "name": "Cimple: Run Active File",
+            "request": "launch"
+          }
+        ]
       }
     ]
   }

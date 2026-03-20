@@ -5,4 +5,4 @@ vsc-extension-quickstart.md
 .npm-cache/**
 src/**
 tsconfig.json
-*.vsix
+

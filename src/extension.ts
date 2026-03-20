@@ -9,46 +9,6 @@ function isCimpleFile(fsPath: string): boolean {
   return CIMPLE_EXTENSIONS.has(path.extname(fsPath).toLowerCase());
 }
 
-async function registerIcons(context: vscode.ExtensionContext): Promise<void> {
-  if (process.platform !== "win32") {
-    vscode.window.showInformationMessage("Icon registration is only available on Windows.");
-    return;
-  }
-
-  const scriptPath = vscode.Uri.joinPath(context.extensionUri, "resources", "scripts", "register.bat").fsPath;
-  if (!fs.existsSync(scriptPath)) {
-    vscode.window.showErrorMessage("Registration script not found.");
-    return;
-  }
-
-  // Run the batch file which handles the permission and registry call
-  cp.exec(`start "" "${scriptPath}"`, (error: Error | null) => {
-    if (error) {
-      vscode.window.showErrorMessage(`Failed to launch registration: ${error.message}`);
-    }
-  });
-}
-
-async function checkAndRegisterWindowsIcons(context: vscode.ExtensionContext): Promise<void> {
-  // Only run this on Windows and only once per installation
-  if (process.platform !== "win32") return;
-  
-  const hasAsked = context.globalState.get("hasAskedForIcons", false);
-  if (hasAsked) return;
-
-  const selection = await vscode.window.showInformationMessage(
-    "Would you like to register Cimple icons for Windows File Explorer?",
-    "Yes", "Not now"
-  );
-
-  if (selection === "Yes") {
-    await registerIcons(context);
-  }
-  
-  // Save that we've asked so we don't bother the user again
-  await context.globalState.update("hasAskedForIcons", true);
-}
-
 async function buildAndRun(document: vscode.TextDocument): Promise<void> {
   const filePath = document.uri.fsPath;
   if (!isCimpleFile(filePath)) {
@@ -92,9 +52,67 @@ async function buildAndRun(document: vscode.TextDocument): Promise<void> {
   terminal.sendText(fullCmd);
 }
 
+class CimpleDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
+  /**
+   * Provide initial debug configurations.
+   */
+  provideDebugConfigurations(
+    folder: vscode.WorkspaceFolder | undefined,
+    token?: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.DebugConfiguration[]> {
+    return [
+      {
+        type: 'cimple',
+        name: 'Launch',
+        request: 'launch'
+      }
+    ];
+  }
+
+  /**
+   * Massage a debug configuration before it is used to launch a debug session.
+   */
+  async resolveDebugConfiguration(
+    folder: vscode.WorkspaceFolder | undefined,
+    config: vscode.DebugConfiguration,
+    token?: vscode.CancellationToken
+  ): Promise<vscode.DebugConfiguration | undefined> {
+    console.log("Cimple Debug: resolveDebugConfiguration called", config);
+    
+    // If no config is provided (e.g. F5 without launch.json), we provide a default one
+    if (!config.type && !config.request && !config.name) {
+      console.log("Cimple Debug: Config is empty, providing defaults");
+      config.type = 'cimple';
+      config.name = 'Launch';
+      config.request = 'launch';
+    }
+
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      console.log("Cimple Debug: Active editor path:", editor.document.uri.fsPath);
+      if (isCimpleFile(editor.document.uri.fsPath)) {
+        console.log("Cimple Debug: Is a Cimple file, calling buildAndRun");
+        await buildAndRun(editor.document);
+      } else {
+        console.log("Cimple Debug: NOT a Cimple file");
+        vscode.window.showErrorMessage("Active file is not a .cimp file.");
+      }
+    } else {
+      console.log("Cimple Debug: No active editor");
+      vscode.window.showErrorMessage("No active Cimple file to run.");
+    }
+
+    return undefined; // Abort the actual debug session launch as we handle it via terminal
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
-  // Check if we should ask to register Windows icons
-  checkAndRegisterWindowsIcons(context);
+  console.log("Cimple extension is now active!");
+
+  // Register the debug configuration provider
+  context.subscriptions.push(
+    vscode.debug.registerDebugConfigurationProvider('cimple', new CimpleDebugConfigurationProvider())
+  );
 
   const runCommand = vscode.commands.registerCommand("cimple.buildAndRun", async () => {
     const editor = vscode.window.activeTextEditor;
@@ -111,11 +129,7 @@ export function activate(context: vscode.ExtensionContext): void {
     await buildAndRun(editor.document);
   });
 
-  const registerIconsCommand = vscode.commands.registerCommand("cimple.registerIcons", async () => {
-    await registerIcons(context);
-  });
-
-  context.subscriptions.push(runCommand, registerIconsCommand);
+  context.subscriptions.push(runCommand);
 }
 
 export function deactivate(): void {}
