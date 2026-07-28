@@ -12,6 +12,16 @@ function isFalkonFile(fsPath: string): boolean {
   return FALKON_EXTENSIONS.has(path.extname(fsPath).toLowerCase());
 }
 
+function escapeShellArg(arg: string, isWindows: boolean): string {
+  if (isWindows) {
+    // PowerShell single-quoted string: escape ' by doubling it
+    return `'${arg.replace(/'/g, "''")}'`;
+  } else {
+    // Bash/Sh single-quoted string: escape ' by replacing with '\''
+    return `'${arg.replace(/'/g, "'\\''")}'`;
+  }
+}
+
 async function buildAndRun(document: vscode.TextDocument): Promise<void> {
   const filePath = document.uri.fsPath;
   if (!isFalkonFile(filePath)) {
@@ -24,6 +34,11 @@ async function buildAndRun(document: vscode.TextDocument): Promise<void> {
   }
 
   const folder = path.dirname(filePath);
+  if (!fs.existsSync(folder)) {
+    vscode.window.showErrorMessage(`Directory does not exist: ${folder}`);
+    return;
+  }
+
   const fileName = path.parse(filePath).name;
   const isWindows = process.platform === "win32";
   const exeName = isWindows ? `${fileName}.exe` : fileName;
@@ -52,9 +67,12 @@ async function buildAndRun(document: vscode.TextDocument): Promise<void> {
 
   terminal.show(true);
 
-  // Build and conditionally run (only if build succeeds)
-  const buildCmd = `falkon build "${path.basename(filePath)}"`;
-  const runCmd = isWindows ? `& ".\\${exeName}"` : `./"${exeName}"`;
+  // Safely escape arguments to prevent shell command injection
+  const escapedBaseName = escapeShellArg(path.basename(filePath), isWindows);
+  const escapedExePath = escapeShellArg(isWindows ? `.\\${exeName}` : `./${exeName}`, isWindows);
+
+  const buildCmd = `falkon build ${escapedBaseName}`;
+  const runCmd = isWindows ? `& ${escapedExePath}` : `${escapedExePath}`;
   const fullCmd = isWindows
     ? `${buildCmd} ; if ($LASTEXITCODE -eq 0) { ${runCmd} }`
     : `${buildCmd} && ${runCmd}`;
@@ -258,6 +276,7 @@ export function activate(context: vscode.ExtensionContext): void {
       await context.globalState.update("falkon.walkthroughCompleted", undefined);
       await context.globalState.update("falkon.walkthroughPromptDismissed", undefined);
       hasPromptedThisSession = false;
+      hasShownInSession = false;
       if (welcomePanel) {
         welcomePanel.webview.postMessage({ command: "resetProgress" });
       } else {
@@ -327,6 +346,9 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {}
 
 function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.ExtensionContext) {
+  if (welcomePanel && welcomePanel !== panel) {
+    welcomePanel.dispose();
+  }
   welcomePanel = panel;
 
   // Convert SVG paths to webview URIs
@@ -370,6 +392,8 @@ function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.Extensi
   // Perform initial background CLI check to update badge silently (does NOT set isVerification = true)
   cp.exec("falkon -v", { timeout: 5000 }, (error, stdout, stderr) => {
     if (error) {
+      context.globalState.update("falkon.hasVerifiedCli", undefined);
+      checkCompletionStatus(context);
       updateCliStatusInWebview("missing", undefined, false);
     } else {
       const version = stdout.trim() || stderr.trim() || "unknown";
@@ -382,7 +406,6 @@ function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.Extensi
     async (message) => {
       switch (message.command) {
         case "verifyCli": {
-          context.globalState.update("falkon.hasVerifiedCli", true);
           // Check installation and send back result
           if (statusBarItem) {
             const isInstalled = await checkFalkonInstallation(statusBarItem, true);
@@ -394,6 +417,8 @@ function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.Extensi
                 updateCliStatusInWebview("ready", version, true);
               });
             } else {
+              context.globalState.update("falkon.hasVerifiedCli", undefined);
+              checkCompletionStatus(context);
               updateCliStatusInWebview("missing", undefined, true);
             }
           }
@@ -408,6 +433,8 @@ function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.Extensi
                   updateCliStatusInWebview("ready", version, false);
                 });
               } else {
+                context.globalState.update("falkon.hasVerifiedCli", undefined);
+                checkCompletionStatus(context);
                 updateCliStatusInWebview("missing", undefined, false);
               }
             });
@@ -497,7 +524,10 @@ function setupWelcomeWebview(panel: vscode.WebviewPanel, context: vscode.Extensi
 }
 function showWelcomeWebview(context: vscode.ExtensionContext) {
   if (welcomePanel) {
-    welcomePanel.dispose();
+    welcomePanel.reveal(vscode.ViewColumn.One);
+    // Re-assign HTML and event listeners to ensure recovery from crashed/blank states
+    setupWelcomeWebview(welcomePanel, context);
+    return;
   }
 
   const panel = vscode.window.createWebviewPanel(
@@ -994,9 +1024,7 @@ function getWelcomeHtml(
             } else {
               badge.className = 'status-badge badge-missing';
               badge.innerText = 'Missing CLI';
-              if (message.isVerification) {
-                isCliReady = false;
-              }
+              isCliReady = false;
             }
           }
           updateProgress();
